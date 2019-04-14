@@ -1,9 +1,9 @@
 $LOAD_PATH.unshift File.realpath("lib", __dir__)
-require "ticked_templates/version"
+require "ticked/version"
 
 Gem::Specification.new do |s|
-  s.name        = "ticked_templates"
-  s.version     = TickedTemplates::VERSION
+  s.name        = "ticked"
+  s.version     = Ticked::VERSION
   s.authors     = ["Josh Cheek"]
   s.email       = ["josh.cheek@gmail.com"]
   s.homepage    = "https://github.com/JoshCheek/ticked_templates"

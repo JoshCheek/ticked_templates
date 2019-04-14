@@ -82,4 +82,10 @@ RSpec.describe Ticked::Template do
       `a${1+1}b`.to_a
     )
   end
+
+  it 'always has a leading and trailing string' do
+    eq! [''], ``.strings
+    eq! ['', ''], `${1}`.strings
+    eq! ['a', 'b', 'c'], `a${1}b${2}c`.strings
+  end
 end

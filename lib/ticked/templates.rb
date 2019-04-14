@@ -13,16 +13,15 @@ module Ticked
     end
 
     def `(template, binding: binding().of_caller(1))
-      strings, expressions = parse(template)
+      strings, expressions = Templates.parse(template)
       interpolations = expressions.map &binding.method(:eval)
       Template.new strings: strings, interpolations: interpolations
     end
 
-    private
-
-    def parse(template)
+    def self.parse(template)
       file = StringIO.new template
       crnt, strings, exprs = "", [], []
+
       until file.eof?
         char = file.getc
         next crnt << char if char != "$".freeze
@@ -40,12 +39,12 @@ module Ticked
           break
         end
       end
-      strings << crnt
-      [strings, exprs]
+
+      [strings<<crnt, exprs]
     end
 
-    def valid?(code)
-      Ripper.sexp(code)
+    def self.valid?(code)
+      Ripper.sexp code
     end
   end
 end

@@ -12,7 +12,7 @@ module Ticked
     end
 
     def inspect
-      ( reduce DELIMITER do |str, (type, value)|
+      ( reduce DELIMITER.dup do |str, (type, value)|
           str << case type
           when STRING_TYPE then value
           when INTERP_TYPE then "${#{value.inspect}}"
@@ -20,6 +20,10 @@ module Ticked
           end
         end
       ) << DELIMITER
+    end
+
+    def ==(strings:, interpolations:)
+      strings() == strings && interpolations() == interpolations
     end
 
     alias_method :to_s, def to_str

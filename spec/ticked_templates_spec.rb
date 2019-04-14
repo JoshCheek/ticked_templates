@@ -84,9 +84,10 @@ RSpec.describe Ticked::Template do
     )
   end
 
-  it 'always has a leading and trailing string' do
+  it 'always has a leading, trailing, and delimiting string' do
     eq! [''], ``.strings
     eq! ['', ''], `${1}`.strings
+    eq! ['', '', ''], `${1}${2}`.strings
     eq! ['a', 'b', 'c'], `a${1}b${2}c`.strings
   end
 
@@ -100,5 +101,14 @@ RSpec.describe Ticked::Template do
       jkl
       STR
     )
+  end
+
+  it 'can parse complex stuff in the interpolations' do
+    eq! [{a: 1, b: 2}, `a${1+1}b`, "}"],
+    <<~`STR`.interpolations
+    ${{a: 1, b: 2}}
+    ${`a${1+1}b`}
+    ${"}"}
+    STR
   end
 end

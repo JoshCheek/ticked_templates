@@ -2,6 +2,7 @@ module Ticked
   class Template
     STRING_TYPE = :string
     INTERP_TYPE = :interpolation
+    DELIMITER   = '`'.freeze
 
     attr_reader :strings, :interpolations
 
@@ -11,37 +12,31 @@ module Ticked
     end
 
     def inspect
-      pieces = map do |type, value|
-        case type
-        when STRING_TYPE then value
-        when INTERP_TYPE then "${#{value.inspect}}"
-        else raise "Wat: #{type.inspect}"
+      ( reduce DELIMITER do |str, (type, value)|
+          str << case type
+          when STRING_TYPE then value
+          when INTERP_TYPE then "${#{value.inspect}}"
+          else raise "Wut: #{type.inspect}"
+          end
         end
-      end
-      "`#{pieces.join('')}`"
+      ) << DELIMITER
     end
 
-    def to_s
+    alias_method :to_s, def to_str
       map { |_, value| value }.join("")
     end
-    alias to_str to_s
 
-    def to_h
-      { strings: strings, interpolations: interpolations }
-    end
-
-    def to_hash
+    alias_method :to_h, def to_hash
       { strings: strings, interpolations: interpolations }
     end
 
     include Enumerable
     def each
       return to_enum unless block_given?
-      strs = strings.each
-      vals = interpolations.each
+      strs, interps = strings.each, interpolations.each
       loop do
         yield STRING_TYPE, strs.next
-        yield INTERP_TYPE, vals.next
+        yield INTERP_TYPE, interps.next
       end
     end
 

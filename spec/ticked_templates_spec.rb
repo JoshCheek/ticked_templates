@@ -75,4 +75,11 @@ RSpec.describe Ticked::Template do
       `b${1}`.to_h, # can't remember anything that will explicitly call this
     )
   end
+
+  it 'is enumerable, yielding the components and their types in order' do
+    eq!(
+      [[:string, 'a'], [:interpolation, 2], [:string, 'b']],
+      `a${1+1}b`.to_a
+    )
+  end
 end

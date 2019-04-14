@@ -2,7 +2,8 @@ require 'ticked'
 
 module SpecHelpers
   def eq!(expected, actual)
-    actual = actual.to_str if expected.is_a?(String) && actual.respond_to?(:to_str)
+    actual = actual.to_str  if expected.is_a?(String) && actual.respond_to?(:to_str)
+    actual = actual.to_hash if expected.is_a?(Hash)   && actual.respond_to?(:to_hash)
     expect(actual).to eq expected
   rescue RSpec::Expectations::ExpectationNotMetError
     $!.set_backtrace caller.drop(1)
@@ -87,5 +88,17 @@ RSpec.describe Ticked::Template do
     eq! [''], ``.strings
     eq! ['', ''], `${1}`.strings
     eq! ['a', 'b', 'c'], `a${1}b${2}c`.strings
+  end
+
+  it 'is multiline' do
+    eq!(
+      { strings: ["abc\ndef ", " ghi\njkl\n"], interpolations: [3] },
+      <<~`STR`
+      abc
+      def ${ 1 +
+      2 } ghi
+      jkl
+      STR
+    )
   end
 end

@@ -13,48 +13,39 @@ module Ticked
     end
 
     def `(template, binding: binding().of_caller(1))
+      strings, expressions = parse(template)
+      interpolations = expressions.map &binding.method(:eval)
+      Template.new strings: strings, interpolations: interpolations
+    end
+
+    private
+
+    def parse(template)
       file = StringIO.new template
       crnt, strings, exprs = "", [], []
-      loop do
-        if file.eof?
-          strings << crnt
-          break
-        end
-
+      until file.eof?
         char = file.getc
-        if char != "$".freeze
-          crnt << char
-          next
-        end
-
+        next crnt << char if char != "$".freeze
         char << file.getc
-        if char != "${".freeze
-          crnt << char
-          next
-        end
-
+        next crnt << char if char != "${".freeze
         strings << crnt
         crnt = ""
 
         loop do
-          if file.eof?
-            raise "this should prob be a syntax error"
-          end
+          raise "this should prob be a syntax error" if file.eof?
           char = file.getc
-          if char != "}"
-            crnt << char
-          elsif Ripper.sexp(crnt) && !Ripper.sexp(crnt+char)
-            exprs << crnt
-            crnt = ""
-            break
-          else
-            crnt << char
-          end
+          next crnt << char if char != "}".freeze || !valid?(crnt) || valid?(crnt+char)
+          exprs << crnt
+          crnt = ""
+          break
         end
       end
+      strings << crnt
+      [strings, exprs]
+    end
 
-      interpolations = exprs.map &binding.method(:eval)
-      Template.new strings: strings, interpolations: interpolations
+    def valid?(code)
+      Ripper.sexp(code)
     end
   end
 end

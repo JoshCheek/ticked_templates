@@ -7,26 +7,25 @@ module Ticked
     extend self
 
     refine Object do
-      def `(template, binding: binding().of_caller(1))
-        Templates.`(template, binding: binding) #`
+      def `(template_str, binding: binding().of_caller(1))
+        Templates.`(template_str, binding: binding) #`
       end
     end
 
-    def `(template, binding: binding().of_caller(1))
-      strings, expressions = Templates.parse(template)
+    def `(template_str, binding: binding().of_caller(1))
+      strings, expressions = Templates.parse(template_str)
       interpolations = expressions.map &binding.method(:eval)
       Template.new strings: strings, interpolations: interpolations
     end
 
-    def self.parse(template)
-      file = StringIO.new template
-      crnt, strings, exprs = "", [], []
+    def self.parse(template_str)
+      file, crnt, strings, exprs = StringIO.new(template_str), "", [], []
 
       until file.eof?
-        char = file.getc
-        next crnt << char if char != "$".freeze
-        char << file.getc
-        next crnt << char if char != "${".freeze
+        str = file.getc
+        next crnt << str if str != "$".freeze
+        str << file.getc
+        next crnt << str if str != "${".freeze
         strings << crnt
         crnt = ""
 

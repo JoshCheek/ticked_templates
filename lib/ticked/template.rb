@@ -11,6 +11,25 @@ module Ticked
       self.interpolations = interpolations.freeze
     end
 
+    def ==(strings:, interpolations:)
+      strings() == strings && interpolations() == interpolations
+    end
+
+    alias_method :to_s, def to_str
+      map { |_, value| value }.join("")
+    end
+
+    alias_method :to_h, def to_hash
+      { strings: strings, interpolations: interpolations }
+    end
+
+    include Enumerable
+
+    def each(&block)
+      recursive_each(1, &block)
+      self
+    end
+
     def chomp
       new_strings = strings.dup
       new_strings[-1] = new_strings[-1].chomp
@@ -41,25 +60,6 @@ module Ticked
         end
       end
       "#{DELIMITER}#{string}#{DELIMITER}"
-    end
-
-    def ==(strings:, interpolations:)
-      strings() == strings && interpolations() == interpolations
-    end
-
-    alias_method :to_s, def to_str
-      map { |_, value| value }.join("")
-    end
-
-    alias_method :to_h, def to_hash
-      { strings: strings, interpolations: interpolations }
-    end
-
-    include Enumerable
-
-    def each(&block)
-      recursive_each(1, &block)
-      self
     end
 
     private

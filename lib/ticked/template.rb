@@ -19,6 +19,24 @@ module Ticked
       self.class.new strings: new_strings, interpolations: interpolations
     end
 
+    def flatten(depth=Float::INFINITY)
+      strings, interpolations, prev = [], [], nil
+      recursive_each depth do |type, val|
+        case type
+        when STRING_TYPE
+          if prev == STRING_TYPE
+            strings[-1] += val
+          else
+            strings << val
+          end
+        when INTERP_TYPE
+          interpolations << val
+        end
+        prev = type
+      end
+      self.class.new(strings: strings, interpolations: interpolations)
+    end
+
     def inspect
       ( reduce DELIMITER.dup do |str, (type, value)|
           str << case type
@@ -43,17 +61,30 @@ module Ticked
     end
 
     include Enumerable
-    def each
-      return to_enum unless block_given?
-      strs, interps = strings.each, interpolations.each
-      loop do
-        yield STRING_TYPE, strs.next
-        yield INTERP_TYPE, interps.next
-      end
+
+    def each(&block)
+      recursive_each(1, &block)
     end
 
     private
 
     attr_writer :strings, :interpolations
+
+    protected
+
+    def recursive_each(depth, &block)
+      return to_enum(:each, depth: depth) unless block
+      strs, interps = strings.each, interpolations.each
+      loop do
+        block[STRING_TYPE, strs.next]
+        interp = interps.next
+        if 0 < depth && Template === interp
+          interp.recursive_each depth-1, &block
+        else
+          block[INTERP_TYPE, interp]
+        end
+      end
+      self
+    end
   end
 end

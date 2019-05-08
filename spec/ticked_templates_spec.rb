@@ -54,6 +54,17 @@ RSpec.describe Ticked::Template do
     eq! `a${1}b`,     t4
   end
 
+  it 'can be flattened, which will merge nested templates up into it' do
+    a = ``
+    b = `b`
+    c = `c${b}${a}${1}c`
+    d = `d${c}d`
+    eq! `dcb${1}cd`,        d.flatten()
+    eq! d,                  d.flatten(0)
+    eq! `dc${b}${a}${1}cd`, d.flatten(1)
+    eq! d.flatten,          d.flatten(2)
+  end
+
   it 'is coercable into a string' do
     eq! "ab", "a"+`b`
     eq! "ab", "a#{`b`}"

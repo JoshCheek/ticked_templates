@@ -88,6 +88,10 @@ RSpec.describe Ticked::Template do
     )
   end
 
+  it 'returns itself from #each' do
+    eq! `a`, `a`.each { }
+  end
+
   it 'always has a leading, trailing, and delimiting string' do
     eq! [''], ``.strings
     eq! ['', ''], `${1}`.strings

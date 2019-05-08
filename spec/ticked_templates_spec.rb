@@ -103,20 +103,22 @@ RSpec.describe Ticked::Template do
     eq!(
       { strings: ["abc\ndef ", " ghi\njkl\n"], interpolations: [3] },
       <<~`STR`
-      abc
-      def ${ 1 +
-      2 } ghi
-      jkl
+        abc
+        def ${ 1 +
+        2 } ghi
+        jkl
       STR
     )
   end
 
   it 'can parse complex stuff in the interpolations' do
-    eq! [{a: 1, b: 2}, `a${1+1}b`, "}"],
-    <<~`STR`.interpolations
-    ${{a: 1, b: 2}}
-    ${`a${1+1}b`}
-    ${"}"}
-    STR
+    eq! [{a: 1, b: 2}, `a${1+1}b`, "}", "}", ""],
+        <<~`STR`.interpolations
+          ${{a: 1, b: 2}}
+          ${`a${1+1}b`}
+          ${"}"}
+          ${?}}
+          ${%}}}
+        STR
   end
 end

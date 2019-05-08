@@ -4,7 +4,7 @@ require 'ripper'
 
 module Ticked
   module Templates
-    extend self
+    extend self # for Templates.`
 
     refine Object do
       def `(template_str, binding: binding().of_caller(1))
@@ -17,32 +17,34 @@ module Ticked
       interpolations = expressions.map &binding.method(:eval)
       Template.new strings: strings, interpolations: interpolations
     end
+  end
 
-    def self.parse(template_str)
-      file, crnt, strings, exprs = StringIO.new(template_str), "", [], []
-
-      until file.eof?
-        str = file.getc
-        next crnt << str if str != "$".freeze
-        str << file.getc
-        next crnt << str if str != "${".freeze
-        strings << crnt
-        crnt = ""
-
-        loop do
-          raise "this should prob be a syntax error" if file.eof?
-          char = file.getc
-          next crnt << char if char != "}".freeze || !valid?(crnt) || valid?(crnt+char)
-          exprs << crnt
-          crnt = ""
-          break
-        end
+  class << Templates
+    def parse(template_str)
+      stream, strings, exprs = StringIO.new(template_str), [], []
+      loop do
+        strings << scan_until(stream, "${") { true }
+        break if stream.eof?
+        exprs << scan_until(stream, "}") { |expr| valid? expr }
       end
-
-      [strings<<crnt, exprs]
+      [strings, exprs]
     end
 
-    def self.valid?(code)
+    private
+
+    def scan_until(stream, delimiter)
+      str, buffer = "", []
+      delimiter.size.times { stream.eof? || buffer << stream.getc }
+      loop do
+        buffstr = buffer.join("")
+        return str if buffstr == delimiter && yield(str)
+        return str << buffstr if stream.eof? # uhhm, could probably mask a syntax error, don't think that's tested
+        str    << buffer.shift
+        buffer << stream.getc
+      end
+    end
+
+    def valid?(code)
       Ripper.sexp code
     end
   end

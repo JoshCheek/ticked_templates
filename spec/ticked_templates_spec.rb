@@ -43,6 +43,17 @@ RSpec.describe Ticked::Template do
     eq! [1, 2], `abc${1}def${2}ghi`.interpolations
   end
 
+  it 'allows the last string to be chomped, returning a new template' do
+    t1 = `a${1}b\n\n`
+    t2 = t1.chomp
+    t3 = t2.chomp
+    t4 = t3.chomp
+    eq! `a${1}b\n\n`, t1
+    eq! `a${1}b\n`,   t2
+    eq! `a${1}b`,     t3
+    eq! `a${1}b`,     t4
+  end
+
   it 'is coercable into a string' do
     eq! "ab", "a"+`b`
     eq! "ab", "a#{`b`}"

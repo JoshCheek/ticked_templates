@@ -11,6 +11,14 @@ module Ticked
       self.interpolations = interpolations.freeze
     end
 
+    def chomp
+      last = strings.last.chomp
+      return self if last == strings.last
+      new_strings = strings.dup
+      new_strings[-1] = last
+      self.class.new strings: new_strings, interpolations: interpolations
+    end
+
     def inspect
       ( reduce DELIMITER.dup do |str, (type, value)|
           str << case type

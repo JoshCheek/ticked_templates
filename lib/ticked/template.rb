@@ -26,6 +26,7 @@ module Ticked
     include Enumerable
 
     def each(&block)
+      return to_enum unless block
       recursive_each(1, &block)
       self
     end
@@ -56,7 +57,7 @@ module Ticked
         str << case type
         when STRING_TYPE then value
         when INTERP_TYPE then "${#{value.inspect}}"
-        else WHAT_NONSENSE_IS_THIS
+        else CASE_CLOSED
         end
       end
       "#{DELIMITER}#{string}#{DELIMITER}"
@@ -69,7 +70,6 @@ module Ticked
     protected
 
     def recursive_each(depth, &block)
-      return to_enum :each, depth: depth unless block
       strs, interps = strings.each, interpolations.each
       loop do
         block[STRING_TYPE, strs.next]

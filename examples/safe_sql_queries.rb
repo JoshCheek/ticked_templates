@@ -1,3 +1,6 @@
+# This expands on simple_sql_templates.rb
+# To show how you could use this library in practice
+
 # Set up ActiveRecord
 require 'active_record'
 ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: ':memory:'
@@ -22,7 +25,7 @@ class TemplatedSqlite
     @connection = connection
   end
   def exec(template)
-    template = template.flatten
+    template = template.flatten # merge nested templates into a single template
     query    = template.strings.join(??)
     binds    = template.interpolations
     @connection.execute(query, binds).map do |row|
